@@ -1,0 +1,11 @@
+{
+    "solde": 6500,
+    "list_transfer": [],
+    "mot_de_passe": "12345678",
+    "montant_compte": 2000,
+    "transfert": {
+        "id": 1,
+        "numero_destinataire": "776567878",
+        "montant": 2000
+    }
+}

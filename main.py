@@ -1,8 +1,43 @@
 #Lien Github : https://github.com/moussacode/Atelier_13_Python_Simulation_USSD_Orange_Money.git
 
+import json
+solde_init = {
+    "solde" :10000,
+    "list_transfer":[],
+    "mot_de_passe":"12345678",
+    "montant_compte":0,
+    "transfert" :{},
+
+}
 
 
-solde = 10000
+def sauvegarde():
+    try:
+        with open('./data.json','w') as data_view:
+            json.dump(solde_init ,data_view,indent=4)
+    except Exception as e :
+        print('Erreur ',e)
+def fetch_data():
+    
+    global solde_init 
+
+    try :
+        with open('./data.json','r') as data_view:
+            solde_init = json.load(data_view)
+    except  (FileNotFoundError, json.JSONDecodeError):
+        sauvegarde()
+            
+    with open('./data.json','r') as data_view:
+            solde_init = json.load(data_view)
+            # print(solde_init)
+            
+            
+            return 
+
+
+
+
+
 mot_de_passe="12345678"
 credit = 0
 montant_compte=0
@@ -33,15 +68,16 @@ list_forfait = [
     ]
 
 
+        
 
 def afficher_transferts():
     print("===== LISTE DES  TRANSFERTS =====")
-    for t in list_transfer:
-        print(f"ID {t['id']} | {t['numero_destinataire']} | {t['montant']} F | {t['statut']}")    
+    for t in solde_init['list_transfer']:
+        print(f"ID {t['id']} | {t['numero_destinataire']} | {t['montant']} F ")    
 
 
 def annuler_transfert_par_id():
-    global solde
+    global solde_init
 
     afficher_transferts()
     choix = input("Saisir l'ID du transfert à annuler (0 pour retour) : ")
@@ -51,32 +87,35 @@ def annuler_transfert_par_id():
 
     choix = int(choix)
 
-    for transfert in list_transfer:
+    for transfert in solde_init['list_transfer']:
         if transfert['id'] == choix:
 
             if verifiermdp("l'annulation") == True:
                 
-                solde += transfert['montant']
+                solde_init['solde'] += transfert['montant']
 
+                solde_init['list_transfer'].remove(transfert)
+                sauvegarde()
                 
 
                 print("Transfert annulé avec succès")
-                print("Nouveau solde :", solde)
+                print("Nouveau solde :", solde_init['solde'])
                 return
 
     print("ID de transfert introuvable")
 
 def historique():
     print('============= HISTORIQUE DE TRANSFERT ===============')
+    print('')
     i=1
-    for transfert in list_transfer:
-                print(f" {i} {transfert['numero_destinataire']} : {transfert['montant']} F | status {transfert['statut']}")
+    for transfert in solde_init['list_transfer']:
+                print(f" {i} {transfert['numero_destinataire']} : {transfert['montant']} F ")
                 i=i+1 
     print('Appuyer 0 pour precedent')
     input()
     
 def annuler_transfert() :
-    global solde,list_transfer
+    global solde_init,solde_init
     
     print('============= ANULLER DE TRANSFERT ===============')
     
@@ -84,7 +123,7 @@ def annuler_transfert() :
     while True:
         try:
             try:
-                if len(list_transfer)==0:
+                if len(solde_init['list_transfer'])==0:
                     print('Pas de transfert effectuer')
                     break
             except ValueError:
@@ -92,9 +131,9 @@ def annuler_transfert() :
                 break
             i=1
             print('Voici les derniers transfers')
-            for transfert in list_transfer:
+            for transfert in solde_init['list_transfer']:
                 print(f" {1} {transfert['numero_destinataire']} : {transfert['montant']} F")  
-            dernier_transfert = list_transfer[-1]
+            dernier_transfert = solde_init['list_transfer'][-1]
             print(f"Votre dernier transfert {dernier_transfert['numero_destinataire'] } : {dernier_transfert['montant']}")
             print('Veuillez mettre 1 pour Annuler ce transfert ou 0 pour precedent')
 
@@ -107,9 +146,10 @@ def annuler_transfert() :
             elif confirmation=='1':
                 if verifiermdp("l annulation transfert") == True:
                     print(f"{dernier_transfert['numero_destinataire'] } : {dernier_transfert['montant']} vient d etre annuler")
-                    solde = solde + dernier_transfert['montant']
+                    solde_init['solde'] = solde_init['solde'] + dernier_transfert['montant']
                     
-                    list_transfer.pop()
+                    solde_init['list_transfer'].pop()
+                    sauvegarde()
                     print('Annulation reussi')
 
                     menu_orange_money()
@@ -121,7 +161,7 @@ def annuler_transfert() :
 
 
 def acheter_forfait():
-    global solde
+    global solde_init
     global forfaits_acheter
     global list_forfait
 
@@ -150,19 +190,15 @@ def acheter_forfait():
                     prix_pass = forfait['prix']
                     print(f"{forfait['id_pass']} {forfait['forfait']} : {prix_pass} F") 
 
-                    if prix_pass > solde :
+                    if prix_pass > solde_init['solde'] :
                         print("Solde Insuffisant")
                     elif verifiermdp("forfait") == True:
                         forfaits_acheter.append(forfait)
-                        solde= solde - prix_pass 
+                        solde_init['solde']= solde_init['solde'] - prix_pass 
+                        sauvegarde()
                         print (f"Achat du pass {forfait['forfait']} : {prix_pass} F reussit")
-                        print('Votre solde est de ', solde)
+                        print('Votre solde est de ', solde_init['solde'])
 
-
-
-                    
-                
- 
                
         except ValueError:
             print('Choix invalide')
@@ -171,8 +207,8 @@ def acheter_forfait():
 
 
 def effectuer_un_transfert():
-    global montant_compte,transfert,list_transfer
-    global solde
+    global transfert
+    global solde_init
     montant = 0
     while True :
         try:
@@ -206,25 +242,25 @@ def effectuer_un_transfert():
                 print("Vous avez decidez de quitter le transfert")
                 print("Redirection vers le menu Orange Money")
                 break
-            elif montant > solde :
+            elif montant > solde_init['solde'] :
                 print("Solde Insuffisant")
             elif verifiermdp("le transfert") == True:
-                solde= solde - montant
-                montant_compte = montant_compte + montant 
+                solde_init['solde']= solde_init['solde'] - montant
+                solde_init['montant_compte'] = solde_init['montant_compte'] + montant 
                 
-                transfert = {
-                    'id': len(list_transfer) + 1,
+                
+                solde_init['transfert'] = {
+                    'id': len(solde_init['list_transfer']) + 1,
                     'numero_destinataire' : numero_destinataire,
                     'montant' : montant,
-                    'statut' : 'Valider '
                 }
                 
-                list_transfer.append(transfert)
-                
+                solde_init['list_transfer'].append(solde_init['transfert'])
+                sauvegarde()
 
                 print (f"Vous avez effectuer un transfert de : {montant}" )
                 print (f"Vers le numeros : {numero_destinataire}"  )
-                print(f"Votre nouveaux solde est de {solde} FCFA") 
+                print(f"Votre nouveaux solde est de {solde_init['solde']} FCFA") 
                 break
             else :
                 break
@@ -234,7 +270,7 @@ def effectuer_un_transfert():
 
 
 def acheter_du_crédit():
-    global solde
+    global solde_init
     global credit
     print('============= ACHAT DE CREDIT ===============')
     print('Appuyer 0 pour precedent')
@@ -250,15 +286,17 @@ def acheter_du_crédit():
                 print("Vous avez decidez de quitter l'achat de credit")
                 print("Redirection vers le menu Orange Money")
                 break
-            elif choix_achat > solde :
+            elif choix_achat > solde_init['solde'] :
                 print("Solde Insuffisant")
             elif verifiermdp("l'achat") == True:
                 credit = credit + choix_achat 
-                solde= solde-choix_achat 
+                solde_init['solde']= solde_init['solde'] -choix_achat 
+                sauvegarde()
+                
                 print ('achat effectue', choix_achat)
-                print('Votre solde est de ', solde) 
+                print('Votre solde est de ', solde_init['solde']) 
 
-                return credit ,solde
+                return credit ,solde_init['solde']
             else :
                 break
                 
@@ -268,6 +306,7 @@ def acheter_du_crédit():
 
 
 def verifiermdp(nom_service):
+    global solde_init
     tentative_consulter=3
     while True :
         print('Veuillez mettre votre Code secret ou 0 pour precedent')
@@ -278,11 +317,11 @@ def verifiermdp(nom_service):
             print("Redirection vers le menu Orange Money")
             menu_orange_money()
 
-        elif mdp != mot_de_passe and tentative_consulter > 1:
+        elif mdp != solde_init['mot_de_passe'] and tentative_consulter > 1:
             print('Code Incorect')
             tentative_consulter = tentative_consulter - 1 
             print(f"Il vous reste {tentative_consulter}")          
-        elif mdp == mot_de_passe :
+        elif mdp == solde_init['mot_de_passe'] :
             
             return True
             
@@ -292,18 +331,20 @@ def verifiermdp(nom_service):
 
 
 def consulter_solde():
-    global solde
+    global solde_init
     print('============= CONSULTATION DU SOLDE ===============')
     print('Appuyer 0 pour quitter')
     print('')
     if verifiermdp('la consultation') == True:
-        print(f"Votre solde est de : {solde} Fcfa")
+        print(f"Votre solde est de : {solde_init['solde']} Fcfa")
     
     
 def menu_orange_money():
+    
     print('============= MENU ORANGE MENU ===============')
     print('')
     while True:
+        fetch_data()
         print("1. Pour consulter le solde :")
         print("2. Pour acheter du credit :")
         print("3. Pour effecter un transfert :")
@@ -330,6 +371,8 @@ def menu_orange_money():
             historique()
         elif choix =='7':
             annuler_transfert_par_id()
+        elif choix =='8':
+            fetch_data()
         elif choix=="9":
             exit()
         elif choix =='0' :
