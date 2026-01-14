@@ -73,7 +73,7 @@ list_forfait = [
 def afficher_transferts():
     print("===== LISTE DES  TRANSFERTS =====")
     for t in solde_init['list_transfer']:
-        print(f"ID {t['id']} | {t['numero_destinataire']} | {t['montant']} F ")    
+        print(f"ID {t['id']} | {t['numero_destinataire']} | {t['montant']} F | statut : {t['statut']} ")    
 
 
 def annuler_transfert_par_id():
@@ -89,28 +89,30 @@ def annuler_transfert_par_id():
 
     for transfert in solde_init['list_transfer']:
         if transfert['id'] == choix:
-
-            if verifiermdp("l'annulation") == True:
-                
-                solde_init['solde'] += transfert['montant']
-
-                solde_init['list_transfer'].remove(transfert)
-                sauvegarde()
-                
-
-                print("Transfert annulé avec succès")
-                print("Nouveau solde :", solde_init['solde'])
+            if transfert['statut'] =='annuler':
+                print('transfert deja annuler')
                 return
+            else :
+                if verifiermdp("l'annulation") == True:
+                    
+                    solde_init['solde'] += transfert['montant']
+    
+                    transfert['statut'] ='annuler'
+                    sauvegarde()
+                    print("Transfert annulé avec succès")
+                    print("Nouveau solde :", solde_init['solde'])
+                    return
 
     print("ID de transfert introuvable")
 
 def historique():
     print('============= HISTORIQUE DE TRANSFERT ===============')
     print('')
-    i=1
-    for transfert in solde_init['list_transfer']:
-                print(f" {i} {transfert['numero_destinataire']} : {transfert['montant']} F ")
-                i=i+1 
+    if len(solde_init['list_transfer'])==0 :
+        print('Aucun Transfert')
+    else :
+        for t in solde_init['list_transfer']:
+            print(f"ID {t['id']} | {t['numero_destinataire']} | {t['montant']} F | statut : {t['statut']} ")    
     print('Appuyer 0 pour precedent')
     input()
     
@@ -129,14 +131,13 @@ def annuler_transfert() :
             except ValueError:
                 print('Pas de transfert effectuer')
                 break
-            i=1
-            print('Voici les derniers transfers')
-            for transfert in solde_init['list_transfer']:
-                print(f" {1} {transfert['numero_destinataire']} : {transfert['montant']} F")  
+            afficher_transferts()  
             dernier_transfert = solde_init['list_transfer'][-1]
-            print(f"Votre dernier transfert {dernier_transfert['numero_destinataire'] } : {dernier_transfert['montant']}")
+            print(f"Votre dernier transfert {dernier_transfert['numero_destinataire'] } : {dernier_transfert['montant']} | Statut {dernier_transfert['statut']}")
+            if dernier_transfert['statut'] =='annuler':
+                print('Dernier transfert deja annuler')
+                return
             print('Veuillez mettre 1 pour Annuler ce transfert ou 0 pour precedent')
-
             confirmation = input('Saisir 1  : ')
 
             if confirmation == '0'  :
@@ -147,8 +148,7 @@ def annuler_transfert() :
                 if verifiermdp("l annulation transfert") == True:
                     print(f"{dernier_transfert['numero_destinataire'] } : {dernier_transfert['montant']} vient d etre annuler")
                     solde_init['solde'] = solde_init['solde'] + dernier_transfert['montant']
-                    
-                    solde_init['list_transfer'].pop()
+                    dernier_transfert['statut']='annuler'
                     sauvegarde()
                     print('Annulation reussi')
 
@@ -253,6 +253,7 @@ def effectuer_un_transfert():
                     'id': len(solde_init['list_transfer']) + 1,
                     'numero_destinataire' : numero_destinataire,
                     'montant' : montant,
+                    'statut': 'effectue'
                 }
                 
                 solde_init['list_transfer'].append(solde_init['transfert'])

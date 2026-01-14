@@ -1,11 +1,19 @@
 {
-    "solde": 6500,
-    "list_transfer": [],
+    "solde": 10000,
+    "list_transfer": [
+        {
+            "id": 1,
+            "numero_destinataire": "778767898",
+            "montant": 600,
+            "statut": "annuler"
+        }
+    ],
     "mot_de_passe": "12345678",
-    "montant_compte": 2000,
+    "montant_compte": 600,
     "transfert": {
         "id": 1,
-        "numero_destinataire": "776567878",
-        "montant": 2000
+        "numero_destinataire": "778767898",
+        "montant": 600,
+        "statut": "effectue"
     }
 }
