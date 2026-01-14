@@ -1,15 +1,17 @@
 #Lien Github : https://github.com/moussacode/Atelier_13_Python_Simulation_USSD_Orange_Money.git
 
 import json
+import time
+
 solde_init = {
     "solde" :10000,
     "list_transfer":[],
     "mot_de_passe":"12345678",
     "montant_compte":0,
     "transfert" :{},
-
+    "forfaits_acheter": [],
+    "credit_acheter": []
 }
-
 
 def sauvegarde():
     try:
@@ -34,21 +36,12 @@ def fetch_data():
             
             return 
 
-
-
-
-
 mot_de_passe="12345678"
 credit = 0
 montant_compte=0
-
-
 transfert ={}
 list_transfer=[]
-
 forfaits_acheter=[]
-
-
 list_forfait = [
     {
     'id_pass':1,
@@ -65,10 +58,7 @@ list_forfait = [
     'forfait' : 'Pass 1 Go',
     'prix' : 2000
     }
-    ]
-
-
-        
+    ]       
 
 def afficher_transferts():
     print("===== LISTE DES  TRANSFERTS =====")
@@ -105,17 +95,54 @@ def annuler_transfert_par_id():
 
     print("ID de transfert introuvable")
 
-def historique():
-    print('============= HISTORIQUE DE TRANSFERT ===============')
-    print('')
-    if len(solde_init['list_transfer'])==0 :
-        print('Aucun Transfert')
+def historique(liste_cible,type_historique):
+    print('============= HISTORIQUE ===============')
+    print(f"Pour {type_historique}")
+    
+    if len(liste_cible)==0 :
+        print(f"Aucun {type_historique}")
     else :
-        for t in solde_init['list_transfer']:
-            print(f"ID {t['id']} | {t['numero_destinataire']} | {t['montant']} F | statut : {t['statut']} ")    
+        for t in liste_cible:
+            if liste_cible == solde_init['list_transfer']:
+                print(f"ID {t['id']} | {t['numero_destinataire']} | {t['montant']} F | statut : {t['statut']} ")    
+            elif liste_cible == solde_init['forfaits_acheter']:
+                print(f"ID {t['id']} | {t['forfait']['forfait']} | {t['forfait']['prix']} F | statut : {t['statut']} |  {t['date_creation']}  ")    
+            elif liste_cible == solde_init['credit_acheter']:
+                print(f" {t['montant_credit']} F | {t['date_creation']} | statut : {t['statut']} ")    
+              
     print('Appuyer 0 pour precedent')
     input()
-    
+def menu_historique():
+    print('============= HISTORIQUE ===============')
+    print('')
+    while True:
+
+        print("1. Historique Transfert :")
+        print("2. Historique Forfait :")
+        print("3. Historique Credit :")
+        print("")
+
+        choix=input('Taper un choix : ').replace(" ", "")
+
+        if choix =='1' :
+            historique(solde_init['list_transfer'],'transfer')
+        elif choix =='2':
+            historique(solde_init['forfaits_acheter'],'forfait')
+        elif choix =='3':
+            historique(solde_init['credit_acheter'],'credit')
+        
+        elif choix =='0' :
+            break
+        else:
+            print('Choix invalide')
+
+
+
+
+
+
+
+
 def annuler_transfert() :
     global solde_init,solde_init
     
@@ -158,8 +185,6 @@ def annuler_transfert() :
             print('')  
     
 
-
-
 def acheter_forfait():
     global solde_init
     global forfaits_acheter
@@ -195,6 +220,15 @@ def acheter_forfait():
                     elif verifiermdp("forfait") == True:
                         forfaits_acheter.append(forfait)
                         solde_init['solde']= solde_init['solde'] - prix_pass 
+                        
+                        forfait_choisi = {
+                            'id': len(solde_init['forfaits_acheter']) + 1,
+                            'forfait':forfait,
+                            'statut': 'effectue',
+                            'date_creation':time.strftime("%d/%m/%Y %H:%M:%S")
+                        }
+                        
+                        solde_init['forfaits_acheter'].append(forfait_choisi)
                         sauvegarde()
                         print (f"Achat du pass {forfait['forfait']} : {prix_pass} F reussit")
                         print('Votre solde est de ', solde_init['solde'])
@@ -203,7 +237,6 @@ def acheter_forfait():
         except ValueError:
             print('Choix invalide')
             print('')
-
 
 
 def effectuer_un_transfert():
@@ -269,7 +302,6 @@ def effectuer_un_transfert():
             print(f"Nombre Invalid")
 
 
-
 def acheter_du_crédit():
     global solde_init
     global credit
@@ -292,6 +324,14 @@ def acheter_du_crédit():
             elif verifiermdp("l'achat") == True:
                 credit = credit + choix_achat 
                 solde_init['solde']= solde_init['solde'] -choix_achat 
+                
+                credit_choisi = {
+                            'id': len(solde_init['credit_acheter']) + 1,
+                            'montant_credit': choix_achat,
+                            'statut': 'effectue',
+                            'date_creation':time.strftime("%d/%m/%Y %H:%M:%S")
+                        }
+                solde_init['credit_acheter'].append(credit_choisi)
                 sauvegarde()
                 
                 print ('achat effectue', choix_achat)
@@ -369,7 +409,7 @@ def menu_orange_money():
         elif choix =='5':
             annuler_transfert()
         elif choix =='6':
-            historique()
+            menu_historique()
         elif choix =='7':
             annuler_transfert_par_id()
         elif choix =='8':
