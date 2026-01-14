@@ -104,14 +104,65 @@ def historique(liste_cible,type_historique):
     else :
         for t in liste_cible:
             if liste_cible == solde_init['list_transfer']:
-                print(f"ID {t['id']} | {t['numero_destinataire']} | {t['montant']} F | statut : {t['statut']} ")    
+                print(f"| {t['numero_destinataire']} | {t['montant']} F | statut : {t['statut']} ")    
             elif liste_cible == solde_init['forfaits_acheter']:
-                print(f"ID {t['id']} | {t['forfait']['forfait']} | {t['forfait']['prix']} F | statut : {t['statut']} |  {t['date_creation']}  ")    
+                print(f"| {t['forfait']['forfait']} | {t['forfait']['prix']} F | statut : {t['statut']} |  {t['date_creation']}  ")    
             elif liste_cible == solde_init['credit_acheter']:
-                print(f" {t['montant_credit']} F | {t['date_creation']} | statut : {t['statut']} ")    
+                print(f"| {t['montant_credit']} F | {t['date_creation']} | statut : {t['statut']} ")    
               
     print('Appuyer 0 pour precedent')
     input()
+def recherche_num_transfert():
+    while True:
+            while True :
+                try:
+                    numero_destinataire = input('Saisir le numero ').replace(" ", "")
+                    if  numero_destinataire == "0" :
+                        print("Vous avez decidez de quitter le transfert")
+                        
+                        menu_historique_transfert()
+                    elif len(numero_destinataire) == 9 :
+                        if (numero_destinataire.startswith('77') or numero_destinataire.startswith('78')) and numero_destinataire.isdigit()  :
+                            print(f"Le numero saisit est : {numero_destinataire}")
+                            break
+                    else :
+                        print('Saisir Un Numero Valide')
+                        print('')
+                except ValueError:
+                    print('Veullez saisir que des chiffre')
+            trouver = False
+
+            for t in  solde_init['list_transfer'] :
+                if t['numero_destinataire']== numero_destinataire:
+                    trouver = True
+                    print(f"| {t['numero_destinataire']} | {t['montant']} F | statut : {t['statut']} ")
+            if trouver == False:
+                print('Aucun transfert trouver pour ce numero')
+            break
+def menu_historique_transfert():
+    
+    while True:
+        print('============= HISTORIQUE DES TRANSFERTS ===============')
+        print('')
+
+        print("1. Afficher tous les transferts :")
+        print("2. Recherche par contacts")
+        
+        print("")
+
+        choix=input('Taper un choix : ').replace(" ", "")
+
+        if choix =='1' :
+            historique(solde_init['list_transfer'],'transfer')
+        elif choix =='2':
+            recherche_num_transfert()
+        
+        elif choix =='0' :
+            break
+        else:
+            print('Choix invalide')
+    
+
 def menu_historique():
     print('============= HISTORIQUE ===============')
     print('')
@@ -125,7 +176,7 @@ def menu_historique():
         choix=input('Taper un choix : ').replace(" ", "")
 
         if choix =='1' :
-            historique(solde_init['list_transfer'],'transfer')
+            menu_historique_transfert()
         elif choix =='2':
             historique(solde_init['forfaits_acheter'],'forfait')
         elif choix =='3':
