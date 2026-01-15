@@ -17,6 +17,7 @@ def sauvegarde():
     try:
         with open('./data.json','w') as data_view:
             json.dump(solde_init ,data_view,indent=4)
+            
     except Exception as e :
         print('Erreur ',e)
 def fetch_data():
@@ -448,7 +449,7 @@ def menu_orange_money():
         print("9. Pour Quitter :")
         
         choix=input('Taper un choix : ').replace(" ", "")
-
+        print(choix)
         if choix =='1' :
             consulter_solde()
         elif choix =='2':
